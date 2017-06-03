@@ -97,7 +97,7 @@ def play_matches(cpu_agents, test_agents, num_matches):
                 test_agents[3].player: 0,
                 agent.player: 0}
 
-        print("{!s:^9}{:^13}".format(idx + 1, agent.name), end="", flush=True)
+        print("{!s:^9}{:^13}".format(idx + 1, agent.name, end="", flush=True))
 
         counts = play_round(agent, test_agents, wins, num_matches)
         total_timeouts += counts[0]
@@ -126,8 +126,57 @@ def play_matches(cpu_agents, test_agents, num_matches):
                "legal moves available to play.\n").format(total_forfeits))
 
 
-def main():
+def play_one_on_one_matches(cpu_agents, test_agents, num_matches):
+    """Play matches between the test agent and each cpu_agent individually. """
+    total_wins = {agent.player: 0 for agent in test_agents}
+    total_timeouts = 0.
+    total_forfeits = 0.
+    total_matches = 2 * num_matches * len(cpu_agents)
 
+    print("\n{:^9}{:^13}{:^13}".format(
+        "Match #", "Opponent", test_agents[0].name))
+
+    print("{:^9}{:^13} {:^5}| {:^5}"
+          .format("", "", *(["Won", "Lost"] * 1)))
+    ###################
+
+    for idx, agent in enumerate(cpu_agents):
+
+        wins = {test_agents[0].player: 0,
+                agent.player: 0}
+
+        print("{!s:^9}{:^13}".format(idx + 1, agent.name, end="", flush=True))
+
+        counts = play_round(agent, test_agents, wins, num_matches)
+        total_timeouts += counts[0]
+        total_forfeits += counts[1]
+        total_wins = update(total_wins, wins)
+        _total = 2 * num_matches
+        round_totals = sum([[wins[agent.player], _total - wins[agent.player]]
+                            for agent in test_agents], [])
+
+        print(" {:^5}| {:^5}"
+              .format(*round_totals))
+
+    print("-" * 74)
+
+    print("{:^9}{:^13}\n".format(
+        "", "Win Rate:",
+        *["{:.1f}%".format(100 * total_wins[a.player] / total_matches)
+          for a in test_agents]
+    ))
+
+    if total_timeouts:
+        print(("\nThere were {} timeouts during the tournament -- make sure " +
+               "your agent handles search timeout correctly, and consider " +
+               "increasing the timeout margin for your agent.\n").format(
+            total_timeouts))
+    if total_forfeits:
+        print(("\nYour ID search forfeited {} games while there were still " +
+               "legal moves available to play.\n").format(total_forfeits))
+
+
+def prepare_default_players():
     # Define two agents to compare -- these agents will play from the same
     # starting position against the same adversaries in the tournament
     test_agents = [
@@ -137,7 +186,7 @@ def main():
         Agent(AlphaBetaPlayer(score_fn=custom_score_3), "AB_Custom_3")
     ]
 
-    # Define a collection of agents to compete against the test agents
+    # # Define a collection of agents to compete against the test agents
     cpu_agents = [
         Agent(RandomPlayer(), "Random"),
         Agent(MinimaxPlayer(score_fn=open_move_score), "MM_Open"),
@@ -148,12 +197,32 @@ def main():
         Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved")
     ]
 
+    return test_agents, cpu_agents
+
+
+def prepare_one_player():
+    test_agents = [
+        Agent(AlphaBetaPlayer(score_fn=custom_score), "WILLIAM")
+    ]
+
+    cpu_agents = [
+        Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved")
+    ]
+
+    return test_agents, cpu_agents
+
+
+def main():
+
     print(DESCRIPTION)
     print("{:^74}".format("*************************"))
     print("{:^74}".format("Playing Matches"))
     print("{:^74}".format("*************************"))
-    play_matches(cpu_agents, test_agents, NUM_MATCHES)
 
+    test_agents, cpu_agents = prepare_default_players()
+    play_matches(cpu_agents, test_agents, NUM_MATCHES)
+    # test_agents, cpu_agents = prepare_one_player()
+    # play_one_on_one_matches(cpu_agents, test_agents, NUM_MATCHES)
 
 if __name__ == "__main__":
     main()

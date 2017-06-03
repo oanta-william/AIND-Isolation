@@ -5,21 +5,34 @@ cases used by the project assistant are not public.
 
 import unittest
 
-import isolation
+import cProfile
+
+# from importlib import reload
+
+from isolation import *
 import game_agent
-
-from importlib import reload
-
+from sample_players import *
+from game_agent import *
 
 class IsolationTest(unittest.TestCase):
     """Unit tests for isolation agents"""
 
     def setUp(self):
-        reload(game_agent)
+        # reload(game_agent)
         self.player1 = "Player1"
         self.player2 = "Player2"
         self.game = isolation.Board(self.player1, self.player2)
 
+    def testOneMatch(self):
+        player1 = AlphaBetaPlayer()
+        player2 = MinimaxPlayer()
+
+        game = Board(player1, player2)
+        winner, history, outcome = game.play()
+
+        print("\nWinner: {}\nOutcome: {}".format(winner, outcome))
+        print(game.to_string())
+        print("Move history:\n{!s}".format(history))
 
 if __name__ == '__main__':
     unittest.main()
