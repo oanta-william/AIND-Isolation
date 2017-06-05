@@ -20,10 +20,9 @@ from collections import namedtuple
 from isolation import Board
 from sample_players import (RandomPlayer, open_move_score,
                             improved_score, center_score)
-from game_agent import (MinimaxPlayer, AlphaBetaPlayer, custom_score,
-                        custom_score_2, custom_score_3)
+from game_agent import *
 
-NUM_MATCHES = 5  # number of matches against each opponent
+NUM_MATCHES = 10  # number of matches against each opponent
 TIME_LIMIT = 150  # number of milliseconds before timeout
 
 DESCRIPTION = """
@@ -181,8 +180,8 @@ def prepare_default_players():
     # starting position against the same adversaries in the tournament
     test_agents = [
         Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score), "AB_Custom"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_2), "AB_Custom_2"),
+        Agent(AdvancedAlphaBetaNegamaxPlayer(score_fn=custom_score_2), "TranspositionTable"),
+        Agent(AdvancedAlphaBetaNegamaxPlayer_V2(score_fn=custom_score_2), "OrderedMoves"),
         Agent(AlphaBetaPlayer(score_fn=custom_score_3), "AB_Custom_3")
     ]
 
@@ -202,7 +201,8 @@ def prepare_default_players():
 
 def prepare_one_player():
     test_agents = [
-        Agent(AlphaBetaPlayer(score_fn=custom_score), "WILLIAM")
+        Agent(AlphaBetaNegamaxPlayer(score_fn=improved_score), "AlphaBeta-N"),
+        # Agent(ABNegamaxPlayer(score_fn=custom_score_2), "AB-N")
     ]
 
     cpu_agents = [
@@ -219,10 +219,10 @@ def main():
     print("{:^74}".format("Playing Matches"))
     print("{:^74}".format("*************************"))
 
-    test_agents, cpu_agents = prepare_default_players()
-    play_matches(cpu_agents, test_agents, NUM_MATCHES)
-    # test_agents, cpu_agents = prepare_one_player()
-    # play_one_on_one_matches(cpu_agents, test_agents, NUM_MATCHES)
+    # test_agents, cpu_agents = prepare_default_players()
+    # play_matches(cpu_agents, test_agents, NUM_MATCHES)
+    test_agents, cpu_agents = prepare_one_player()
+    play_one_on_one_matches(cpu_agents, test_agents, 30)
 
 if __name__ == "__main__":
     main()
